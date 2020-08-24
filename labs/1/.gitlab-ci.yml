@@ -1,0 +1,52 @@
+# Указываем образ, но может статься, что он единственный (какой ни указывай - будет один)
+image: ubuntu:18.04
+
+stages:
+  - compile
+  - test
+  - pages
+
+# Задаём команды, которые будут выполнены до прогона скриптов
+before_script:
+  - apt-get -y update
+
+# Собираем проект
+compile:
+  stage: compile
+  script:
+  # Устанавливаем пакеты
+  - apt-get -y install gcc g++
+  - apt-get -y install make
+  # Собираем
+  - ./configure
+  - make
+  # Сохраняем в артефактах
+  artifacts:
+    paths:
+    - bin/l1
+    expire_in: 30 minutes
+
+# Автотесты
+test:
+  stage: test
+  script:
+  - chmod +x test/test*
+  - test/test01
+  - test/test02
+
+# Используем GitLab Pages для публикации Doxygen-документации
+pages:
+  stage: pages
+  script:
+  # Устанавливаем пакеты
+  - apt-get -y install doxygen
+  - apt-get -y install graphviz
+  # Прогоняем Doxygen
+  - doxygen doc/Doxyfile.cfg
+  # Диплоим
+  - mv doc/html/ public/
+  artifacts:
+    paths:
+    - public
+  only:
+  - master

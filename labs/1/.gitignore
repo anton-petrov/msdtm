@@ -1,0 +1,7 @@
+bin
+build
+doc/html
+*.data
+*.result
+*.user
+
